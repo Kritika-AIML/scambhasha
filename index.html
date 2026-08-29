@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScamBhasha | Cybersecurity That Understands How India Talks</title>
+  <meta name="description" content="AI-powered Hindi, Hinglish, and Roman Hindi scam detection and threat intelligence platform." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eefbfb',
+              100: '#d5f5f5',
+              200: '#b0eded',
+              300: '#79dede',
+              400: '#3bc5c7',
+              500: '#14a8ab',
+              600: '#0e878b',
+              700: '#0e6c70',
+              800: '#10565a',
+              900: '#12474b',
+              950: '#06292c',
+            },
+            cyber: {
+              dark: '#0a0d14',
+              darker: '#06080d',
+              card: '#111726',
+              border: '#1e293b',
+              accent: '#06b6d4',
+              glow: '#38bdf8'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          },
+          animation: {
+            'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'spin-slow': 'spin 3s linear infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #06080d;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .cyber-grid-bg {
+      background-image: radial-gradient(rgba(14, 135, 139, 0.12) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .cyber-card {
+      background: linear-gradient(135deg, rgba(17, 23, 38, 0.85) 0%, rgba(10, 13, 20, 0.95) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      backdrop-filter: blur(12px);
+    }
+    .cyber-card:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    .cyber-glow-cyan {
+      box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.25);
+    }
+    .cyber-glow-red {
+      box-shadow: 0 0 35px -5px rgba(239, 68, 68, 0.35);
+    }
+    .cyber-glow-amber {
+      box-shadow: 0 0 35px -5px rgba(245, 158, 11, 0.35);
+    }
+    .cyber-glow-green {
+      box-shadow: 0 0 35px -5px rgba(34, 197, 94, 0.35);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+  </style>
+
+  <!-- React 18, Babel & Tesseract.js -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body class="bg-[#06080d] text-slate-100 min-h-screen selection:bg-cyan-500 selection:text-black">
+  <div id="root"></div>
+
+  <!-- Main React App Script (JSX) -->
+  <script type="text/babel" src="./app.jsx"></script>
+</body>
+</html>

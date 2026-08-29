@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: #06080d;
+  color: #f1f5f9;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Custom cyber utility classes */
+.cyber-card {
+  background: linear-gradient(135deg, rgba(17, 23, 38, 0.85) 0%, rgba(10, 13, 20, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.cyber-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.cyber-glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.25);
+}
+
+.cyber-glow-red {
+  box-shadow: 0 0 30px -5px rgba(239, 68, 68, 0.35);
+}
+
+.cyber-glow-amber {
+  box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.35);
+}
+
+.cyber-glow-green {
+  box-shadow: 0 0 30px -5px rgba(34, 197, 94, 0.35);
+}
+
+.cyber-grid-bg {
+  background-image: radial-gradient(rgba(14, 135, 139, 0.1) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Focus states for accessibility */
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #06b6d4;
+  outline-offset: 2px;
+}
