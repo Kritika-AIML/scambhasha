@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldAlert, Shield, Sparkles, Send, Trash2, 
-  ArrowRight, CheckCircle2, AlertTriangle, Globe2, Zap
+  ShieldAlert, Sparkles, Trash2, 
+  ArrowRight, Globe2, Zap
 } from 'lucide-react';
 import { SAMPLE_SCAMS } from '../engine/ruleAnalyzer';
 import { normalizeHindiText } from '../engine/normalizer';

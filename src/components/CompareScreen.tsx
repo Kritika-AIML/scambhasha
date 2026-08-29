@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Scale, XCircle, CheckCircle2, ShieldAlert, Sparkles, 
-  ArrowRight, ShieldCheck, Globe, Zap, Check, AlertTriangle 
+  Scale, XCircle, Sparkles, ShieldCheck, Globe
 } from 'lucide-react';
 
 export const CompareScreen: React.FC = () => {

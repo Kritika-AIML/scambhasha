@@ -44,7 +44,10 @@ export async function analyzeMessageWithGemini(
   const urlIntel = analyzeUrlInMessage(rawText);
 
   // Fallback to deterministic analyzer immediately if no API key is set
-  const apiKey = customApiKey || (typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.VITE_GEMINI_API_KEY as string) : '');
+  const envKey = typeof import.meta !== 'undefined' && (import.meta as any)?.env
+    ? (import.meta as any).env.VITE_GEMINI_API_KEY
+    : undefined;
+  const apiKey = customApiKey || envKey || '';
   
   if (!apiKey || apiKey.trim() === '') {
     console.info('[ScamBhasha Engine] No Gemini API key provided. Using deterministic linguistic & pattern engine.');

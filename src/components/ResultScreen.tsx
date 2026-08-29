@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
-  ShieldAlert, ShieldCheck, AlertTriangle, ExternalLink, 
-  Flag, ArrowLeft, CheckCircle2, XCircle, Info, Link2, 
-  Sparkles, FileText, Globe2, ChevronDown, ChevronUp, Copy, Check
+  ShieldAlert, ShieldCheck, AlertTriangle, 
+  Flag, ArrowLeft, CheckCircle2, Link2, 
+  Sparkles, Globe2, ChevronDown, ChevronUp, Copy, Check
 } from 'lucide-react';
 import { ScamAnalysisResult } from '../types/scam';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Users, ShieldAlert, AlertTriangle, Activity, Database, 
-  ArrowRight, Radio, ExternalLink, Sparkles, Filter, Info, ShieldCheck, Flame, RefreshCw
+  Users, Activity, Database, 
+  Radio, Flame, RefreshCw
 } from 'lucide-react';
 import { detectLiveScamCampaigns, getStoredReports } from '../engine/campaignClusterer';
 import { ScamCampaign, ScamReport } from '../types/scam';

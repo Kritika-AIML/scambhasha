@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Loader2, ShieldAlert, Cpu } from 'lucide-react';
+import { CheckCircle2, Loader2, Cpu } from 'lucide-react';
 import { ScamAnalysisResult } from '../types/scam';
 
 interface AnalysisPipelineModalProps {

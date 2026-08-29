@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, ShieldAlert, Users, Scale, LayoutDashboard, KeyRound, Sparkles } from 'lucide-react';
+import { Shield, ShieldAlert, Users, Scale, LayoutDashboard, KeyRound } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'scanner' | 'community' | 'compare' | 'dashboard';

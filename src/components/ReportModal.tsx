@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldAlert, CheckCircle2, Lock, Flag, Send } from 'lucide-react';
+import { X, CheckCircle2, Lock, Flag, Send } from 'lucide-react';
 import { ScamAnalysisResult } from '../types/scam';
 import { saveNewReport } from '../engine/campaignClusterer';
 

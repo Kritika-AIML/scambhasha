@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, Image as ImageIcon, CheckCircle2, AlertCircle, RefreshCw, Edit3, X } from 'lucide-react';
+import { UploadCloud, CheckCircle2, AlertCircle, RefreshCw, Edit3, X } from 'lucide-react';
 import { createWorker } from 'tesseract.js';
 
 interface OcrDropzoneProps {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
-  LayoutDashboard, ShieldAlert, ShieldCheck, AlertTriangle, 
-  Activity, ArrowRight, Clock, Award, Shield, Flame
+  LayoutDashboard, ShieldAlert, 
+  ArrowRight, Clock, Shield, Flame
 } from 'lucide-react';
 import { ScamAnalysisResult } from '../types/scam';
 import { SEEDED_CAMPAIGNS } from '../engine/campaignClusterer';
