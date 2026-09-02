@@ -104,6 +104,67 @@ function normalizeHindiText(text) {
   };
 }
 
+const GLOSS_PHRASES = [
+  [/\b(aapka|apka)\s+kyc\s+expire\s+hone\s+wala\s+hai\b/gi, 'Your KYC is about to expire'],
+  [/\b(account|khata)\s+band\s+hone\s+se\s+pehle\b/gi, 'before account gets blocked'],
+  [/\b(abhi|turant)\s+update\s+karein\b/gi, 'update now'],
+  [/\bbadhai\s+ho!?\s*(aapne|apne)?\s*(₹?[\d,]+)?\s*(jeete\s+hain|jeeta\s+hai)?\b/gi, 'Congratulations! You have won prize money'],
+  [/\bprize\s+claim\s+karne\s+ke\s+liye\b/gi, 'To claim the prize'],
+  [/\bbank\s+details\s+aur\b/gi, 'bank details and'],
+  [/\b(₹\s*[\d,]+)\s*(fee|shulk)\s*(bhejein|dein)\b/gi, 'send $1 fee'],
+  [/\bwork\s+from\s+home\s+job\s+available\b/gi, 'Work from home job available'],
+  [/\bregistration\s+fee\s+only\b/gi, 'registration fee only'],
+  [/\bdaily\s+[\d\s\w]+\s+typing\s+work\b/gi, 'daily typing work'],
+  [/\baapka\s+payment\s+hold\s+par\s+hai\b/gi, 'Your payment is on hold'],
+  [/\bissue\s+resolve\s+karne\s+ke\s+liye\b/gi, 'to resolve this issue'],
+  [/\blink\s+par\s+click\s+karein\b/gi, 'click on the link'],
+  [/\baur\s+otp\s+verify\s+karein\b/gi, 'and verify the OTP'],
+  [/\baapka\s+bijli\s+connection\s+aaj\s+raat\b/gi, 'Your electricity connection tonight'],
+  [/\bdisconnect\s+ho\s+(jayega|jaayega)\b/gi, 'will be disconnected'],
+  [/\bpichhla\s+bill\s+update\s+nahi\s+hua\b/gi, 'previous bill is unpaid'],
+  [/\bsampark\s+karein\b/gi, 'contact immediately']
+];
+
+const GLOSS_WORD_MAP = {
+  'aapka': 'your', 'aapki': 'your', 'aapke': 'your',
+  'apka': 'your', 'apki': 'your', 'apke': 'your',
+  'humara': 'our', 'hamara': 'our', 'mera': 'my', 'meri': 'my',
+  'khata': 'account', 'paise': 'money', 'paisa': 'money', 'rupaye': 'rupees',
+  'band': 'closed/suspended', 'rok': 'hold', 'turant': 'immediately', 'jaldi': 'urgently',
+  'abhi': 'now', 'aaj': 'today', 'pehle': 'before', 'pahle': 'before',
+  'badhai': 'congratulations', 'naukri': 'job', 'shulk': 'fee', 'jankari': 'information',
+  'vivaran': 'details', 'suchana': 'notice', 'kripya': 'please',
+  'karein': 'do/update', 'karo': 'do', 'bhejein': 'send', 'kamayein': 'earn',
+  'hai': 'is', 'hain': 'are', 'tha': 'was', 'the': 'were', 'hoga': 'will be',
+  'milega': 'will receive', 'par': 'on', 'se': 'from', 'ko': 'to', 'ka': 'of',
+  'ki': 'of', 'ke': 'of', 'mein': 'in', 'nahi': 'not', 'aur': 'and', 'ya': 'or',
+  'tatkaal': 'immediately', 'sheeghra': 'urgently', 'jeeta': 'won', 'jeete': 'won'
+};
+
+function generateLiteralEnglishGloss(text) {
+  if (!text || typeof text !== 'string') return '';
+  let gloss = text;
+  for (const [regex, replacement] of GLOSS_PHRASES) {
+    gloss = gloss.replace(regex, replacement);
+  }
+  const tokens = gloss.split(/(\s+|[.,!?;:()\[\]{}"'\/\\])/);
+  const translated = tokens.map(token => {
+    if (!token || /^\s+$/.test(token) || /^[.,!?;:()\[\]{}"'\/\\]+$/.test(token)) {
+      return token;
+    }
+    const clean = token.toLowerCase().trim();
+    if (GLOSS_WORD_MAP[clean]) {
+      const trans = GLOSS_WORD_MAP[clean];
+      if (token[0] === token[0].toUpperCase() && token.length > 1) {
+        return trans.charAt(0).toUpperCase() + trans.slice(1);
+      }
+      return trans;
+    }
+    return token;
+  });
+  return translated.join('').replace(/\s{2,}/g, ' ').trim();
+}
+
 // ==========================================
 // 2. URL INTELLIGENCE & HEURISTICS
 // ==========================================
@@ -276,15 +337,16 @@ function analyzeScamDeterministic(rawText) {
       script: norm.script || 'Roman Hindi',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Your KYC is about to expire. Before account gets closed, update now: bit.ly/sbi-kyc-update',
       scam_type: 'Fake KYC Scam',
       risk_score: 96,
       risk_level: 'HIGH',
       signals: [
-        { type: 'fake_banking_kyc', label: 'Fake Banking / KYC Trap', emoji: '🏦', excerpt: 'Aapka KYC expire hone wala hai' },
-        { type: 'threat', label: 'Threat / Suspension Language', emoji: '😨', excerpt: 'Account band hone se pehle' },
-        { type: 'urgency', label: 'Urgency Pressure', emoji: '⚠️', excerpt: 'abhi update karein' },
-        { type: 'suspicious_url', label: 'Suspicious / Shortened URL', emoji: '🔗', excerpt: 'bit.ly/sbi-kyc-update' },
-        { type: 'impersonation', label: 'Brand Impersonation', emoji: '👮', excerpt: 'sbi-kyc-update' }
+        { type: 'fake_banking_kyc', label: 'Fake Banking / KYC Trap', emoji: '🏦', excerpt: 'Aapka KYC expire hone wala hai', points: 22 },
+        { type: 'threat', label: 'Threat / Suspension Language', emoji: '😨', excerpt: 'Account band hone se pehle', points: 24 },
+        { type: 'urgency', label: 'Urgency Pressure', emoji: '⚠️', excerpt: 'abhi update karein', points: 18 },
+        { type: 'suspicious_url', label: 'Suspicious / Shortened URL', emoji: '🔗', excerpt: 'bit.ly/sbi-kyc-update', points: 18 },
+        { type: 'impersonation', label: 'Brand Impersonation (SBI)', emoji: '👮', excerpt: 'sbi-kyc-update', points: 14 }
       ],
       explanation: 'This message uses an urgent account-suspension threat combined with a deceptive shortened link mimicking SBI to harvest netbanking credentials under the guise of mandatory KYC renewal.',
       recommended_actions: [
@@ -316,14 +378,15 @@ function analyzeScamDeterministic(rawText) {
       script: norm.script || 'Latin (English)',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Work from home job available. ₹30,000 monthly. Registration fee only ₹499. Daily 2 hours typing work. WhatsApp: 9876543210',
       scam_type: 'Fake Work From Home Scam',
       risk_score: 92,
       risk_level: 'HIGH',
       signals: [
-        { type: 'fake_job', label: 'Fake Job / WFH Offer', emoji: '💼', excerpt: 'Work from home job available. ₹30,000 monthly' },
-        { type: 'payment', label: 'Upfront Registration Fee Demand', emoji: '💰', excerpt: 'Registration fee only ₹499' },
-        { type: 'reward_bait', label: 'Unrealistic Pay for Minimal Effort', emoji: '🎁', excerpt: 'Daily 2 hours typing work' },
-        { type: 'suspicious_cta', label: 'Off-Platform WhatsApp Redirection', emoji: '🚨', excerpt: 'WhatsApp: 9876543210' }
+        { type: 'fake_job', label: 'Fake Job / WFH Offer', emoji: '💼', excerpt: 'Work from home job available. ₹30,000 monthly', points: 28 },
+        { type: 'payment', label: 'Upfront Registration Fee Demand', emoji: '💰', excerpt: 'Registration fee only ₹499', points: 26 },
+        { type: 'reward_bait', label: 'Unrealistic Pay for Minimal Effort', emoji: '🎁', excerpt: 'Daily 2 hours typing work', points: 20 },
+        { type: 'suspicious_cta', label: 'Off-Platform WhatsApp Redirection', emoji: '🚨', excerpt: 'WhatsApp: 9876543210', points: 18 }
       ],
       explanation: 'Classic advance-fee employment fraud: lures victims with an unrealistic ₹30,000/month salary for minimal effort while demanding an upfront non-refundable ₹499 registration fee via WhatsApp.',
       recommended_actions: [
@@ -347,15 +410,16 @@ function analyzeScamDeterministic(rawText) {
       script: norm.script || 'Roman Hindi',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Congratulations! You have won ₹5,00,000 in KBC lucky draw. To claim prize send bank details and ₹1,500 fee: bit.ly/kbc-claim',
       scam_type: 'Lottery/Reward Scam',
       risk_score: 98,
       risk_level: 'HIGH',
       signals: [
-        { type: 'reward_bait', label: 'Fake Reward / Lottery Bait', emoji: '🎁', excerpt: 'Badhai ho! Aapne ₹5,00,000 jeete hain' },
-        { type: 'impersonation', label: 'Brand Impersonation (KBC)', emoji: '👮', excerpt: 'KBC lucky draw mein' },
-        { type: 'personal_info', label: 'Bank Details Harvesting', emoji: '📱', excerpt: 'bank details' },
-        { type: 'payment', label: 'Advance Processing Fee Demand', emoji: '💰', excerpt: '₹1,500 fee bhejein' },
-        { type: 'suspicious_url', label: 'Phishing Claim Link', emoji: '🔗', excerpt: 'bit.ly/kbc-claim' }
+        { type: 'reward_bait', label: 'Fake Reward / Lottery Bait', emoji: '🎁', excerpt: 'Badhai ho! Aapne ₹5,00,000 jeete hain', points: 26 },
+        { type: 'impersonation', label: 'Brand Impersonation (KBC)', emoji: '👮', excerpt: 'KBC lucky draw mein', points: 20 },
+        { type: 'personal_info', label: 'Bank Details Harvesting', emoji: '📱', excerpt: 'bank details', points: 18 },
+        { type: 'payment', label: 'Advance Processing Fee Demand', emoji: '💰', excerpt: '₹1,500 fee bhejein', points: 20 },
+        { type: 'suspicious_url', label: 'Phishing Claim Link', emoji: '🔗', excerpt: 'bit.ly/kbc-claim', points: 14 }
       ],
       explanation: 'Fabricated lottery scam impersonating Kaun Banega Crorepati (KBC) asking for a ₹1,500 advance processing fee and sensitive bank details to unlock a fictitious ₹5,00,000 prize.',
       recommended_actions: [
@@ -387,15 +451,16 @@ function analyzeScamDeterministic(rawText) {
       script: norm.script || 'Roman Hindi',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Your payment is on hold. To resolve issue click on the link and verify OTP: http://paytm-support-fix.xyz/verify',
       scam_type: 'Payment/Phishing Scam',
       risk_score: 95,
       risk_level: 'HIGH',
       signals: [
-        { type: 'threat', label: 'Transaction Hold / False Alarm', emoji: '😨', excerpt: 'Aapka payment hold par hai' },
-        { type: 'suspicious_cta', label: 'Deceptive Resolution Link', emoji: '🚨', excerpt: 'Issue resolve karne ke liye link par click karein' },
-        { type: 'credential_request', label: 'OTP Harvesting Trap', emoji: '🔐', excerpt: 'OTP verify karein' },
-        { type: 'suspicious_url', label: 'Deceptive Lookalike Domain', emoji: '🔗', excerpt: 'paytm-support-fix.xyz/verify' },
-        { type: 'impersonation', label: 'Payment App Impersonation (Paytm)', emoji: '👮', excerpt: 'paytm-support-fix' }
+        { type: 'threat', label: 'Transaction Hold / False Alarm', emoji: '😨', excerpt: 'Aapka payment hold par hai', points: 22 },
+        { type: 'suspicious_cta', label: 'Deceptive Resolution Link', emoji: '🚨', excerpt: 'Issue resolve karne ke liye link par click karein', points: 18 },
+        { type: 'credential_request', label: 'OTP Harvesting Trap', emoji: '🔐', excerpt: 'OTP verify karein', points: 24 },
+        { type: 'suspicious_url', label: 'Deceptive Lookalike Domain', emoji: '🔗', excerpt: 'paytm-support-fix.xyz/verify', points: 18 },
+        { type: 'impersonation', label: 'Payment App Impersonation (Paytm)', emoji: '👮', excerpt: 'paytm-support-fix', points: 13 }
       ],
       explanation: 'Phishing attack mimicking a payment gateway (Paytm) claiming a blocked transaction to induce panic and steal OTPs on an unverified .xyz spoofing domain.',
       recommended_actions: [
@@ -438,20 +503,23 @@ function analyzeScamDeterministic(rawText) {
         type: rule.type,
         label: rule.label,
         emoji: rule.emoji,
-        excerpt: matchedExcerpt
+        excerpt: matchedExcerpt,
+        points: rule.weight
       });
       baseScore += rule.weight;
     }
   }
 
   if (urlIntel.url_present) {
+    const urlPts = Math.round(urlIntel.url_risk_score * 0.35);
     detectedSignals.push({
       type: 'suspicious_url',
       label: urlIntel.domain_suspicious || urlIntel.is_shortened ? 'Suspicious / Obfuscated URL' : 'Embedded Web Link',
       emoji: '🔗',
-      excerpt: urlIntel.url || 'URL link'
+      excerpt: urlIntel.url || 'URL link',
+      points: urlPts
     });
-    baseScore += Math.round(urlIntel.url_risk_score * 0.35);
+    baseScore += urlPts;
   }
 
   let scamType = 'Uncertain / Suspicious Message';
@@ -465,6 +533,20 @@ function analyzeScamDeterministic(rawText) {
 
   let finalRiskScore = Math.min(99, Math.max(5, baseScore));
   if (detectedSignals.length === 0) finalRiskScore = 12;
+
+  // Normalize per-signal points so sum matches finalRiskScore
+  if (detectedSignals.length > 0 && baseScore > 0) {
+    let allocated = 0;
+    detectedSignals.forEach((s, idx) => {
+      if (idx === detectedSignals.length - 1) {
+        s.points = Math.max(5, finalRiskScore - allocated);
+      } else {
+        const p = Math.max(5, Math.round(((s.points || 20) / baseScore) * finalRiskScore));
+        s.points = p;
+        allocated += p;
+      }
+    });
+  }
 
   let riskLevel = 'LOW';
   if (finalRiskScore >= 70) riskLevel = 'HIGH';
@@ -486,11 +568,14 @@ function analyzeScamDeterministic(rawText) {
     ? `Flagged due to ${detectedSignals.length} high-risk indicators including ${detectedSignals.map(s => s.label).slice(0, 3).join(', ')}.`
     : 'No overt scam patterns, urgency pressure, or credential harvesting techniques detected.';
 
+  const englishGloss = generateLiteralEnglishGloss(normalized);
+
   return {
     language: norm.language,
     script: norm.script,
     normalization_applied: norm.normalization_applied,
     normalized_text: normalized,
+    english_gloss: englishGloss || normalized,
     scam_type: scamType,
     risk_score: finalRiskScore,
     risk_level: riskLevel,
@@ -704,8 +789,16 @@ function App() {
   const [scanHistory, setScanHistory] = useState([]);
   const [emergingAlertsCount, setEmergingAlertsCount] = useState(0);
 
-  // Pipeline Animation Stage
-  const [pipelineStep, setPipelineStep] = useState(0);
+  // Live Signal Build-Up Meter State
+  const [revealedSignals, setRevealedSignals] = useState([]);
+  const [runningScore, setRunningScore] = useState(0);
+  const [isFinishedStreaming, setIsFinishedStreaming] = useState(false);
+
+  // Normalization X-Ray & Warning Card State
+  const [showXRayView, setShowXRayView] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const shareCardRef = useRef(null);
 
   // OCR state
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -730,26 +823,118 @@ function App() {
 
   const handleScan = () => {
     if (!inputText.trim()) return;
+    const result = analyzeScamDeterministic(inputText);
+    setCurrentResult(result);
+    setScanHistory(prev => [result, ...prev]);
+
+    const targetSignals = (result.signals && result.signals.length > 0)
+      ? result.signals
+      : [
+          { type: 'urgency', label: 'Linguistic Structure Check', emoji: '🔍', excerpt: 'Sanitizing Indic tokens', points: 5 },
+          { type: 'fake_banking_kyc', label: 'Pattern Threat Evaluation', emoji: '🛡️', excerpt: 'Evaluating credential markers', points: 7 }
+        ];
+
+    const targetFinal = result.risk_score;
+    setRevealedSignals([]);
+    setRunningScore(0);
+    setIsFinishedStreaming(false);
     setIsAnalyzing(true);
-    setPipelineStep(0);
 
-    const stepIntervals = [300, 320, 320, 350, 350, 350];
-    let step = 0;
-
+    let currentIndex = 0;
+    let accumulatedScore = 0;
     const interval = setInterval(() => {
-      step++;
-      setPipelineStep(step);
-      if (step >= 6) {
+      if (currentIndex < targetSignals.length) {
+        const nextSig = targetSignals[currentIndex];
+        const added = nextSig.points || Math.max(10, Math.round(targetFinal / targetSignals.length));
+        accumulatedScore = Math.min(targetFinal, accumulatedScore + added);
+        if (currentIndex === targetSignals.length - 1) {
+          accumulatedScore = targetFinal;
+        }
+        setRevealedSignals(prev => [...prev, nextSig]);
+        setRunningScore(accumulatedScore);
+        currentIndex++;
+      } else {
         clearInterval(interval);
+        setIsFinishedStreaming(true);
         setTimeout(() => {
-          const result = analyzeScamDeterministic(inputText);
-          setCurrentResult(result);
-          setScanHistory(prev => [result, ...prev]);
           setIsAnalyzing(false);
           setViewingResult(true);
-        }, 400);
+        }, 600);
       }
-    }, 320);
+    }, 420);
+  };
+
+  const handleDownloadCard = async () => {
+    if (!shareCardRef.current || !currentResult) return;
+    setIsExporting(true);
+
+    try {
+      if (window.html2canvas) {
+        const canvas = await window.html2canvas(shareCardRef.current, {
+          backgroundColor: '#06080d',
+          scale: 2,
+          useCORS: true,
+          logging: false
+        });
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `scambhasha-alert-${currentResult.scam_type.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`;
+        link.click();
+      } else {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1080;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#06080d';
+          ctx.fillRect(0, 0, 1080, 1080);
+          ctx.fillStyle = currentResult.risk_level === 'HIGH' ? '#e11d48' : '#d97706';
+          ctx.font = 'bold 36px sans-serif';
+          ctx.fillText('🚨 CYBER THREAT ADVISORY', 60, 100);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 52px sans-serif';
+          ctx.fillText(currentResult.scam_type, 60, 200);
+          ctx.fillStyle = currentResult.risk_level === 'HIGH' ? '#f43f5e' : '#f59e0b';
+          ctx.font = 'bold 44px monospace';
+          ctx.fillText(`${currentResult.risk_score}% ${currentResult.risk_level} RISK VERDICT`, 60, 280);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '28px sans-serif';
+          ctx.fillText(currentResult.explanation.substring(0, 80), 60, 360);
+          ctx.fillText(currentResult.explanation.substring(80, 160), 60, 400);
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = '22px monospace';
+          ctx.fillText('Scanned with ScamBhasha • Cybersecurity That Understands How India Talks', 60, 1000);
+          
+          const link = document.createElement('a');
+          link.href = canvas.toDataURL('image/png');
+          link.download = `scambhasha-alert.png`;
+          link.click();
+        }
+      }
+    } catch (e) {
+      console.error('Export card error:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleShareWhatsApp = async () => {
+    if (!currentResult) return;
+    const textToShare = `🚨 *CYBER THREAT WARNING - PLEASE BE CAREFUL!* 🚨\n\n*Threat Detected:* ${currentResult.scam_type}\n*Risk Level:* ${currentResult.risk_level} (${currentResult.risk_score}% Scam Probability)\n\n*Why:* ${currentResult.explanation}\n\n*Safety Actions:*\n• ${currentResult.recommended_actions.slice(0, 2).join('\n• ')}\n\n🛡️ _Scanned and verified via ScamBhasha (Indic Cybersecurity Intelligence)_`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Scam Alert: ${currentResult.scam_type}`,
+          text: textToShare
+        });
+        return;
+      } catch (err) {}
+    }
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`;
+    window.open(waUrl, '_blank');
   };
 
   const handleOcrFileSelect = async (e) => {
@@ -941,17 +1126,85 @@ function App() {
                   </div>
                 </div>
 
-                {/* Transliteration Normalization Info Box */}
-                <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
-                  <div className="flex items-center space-x-2.5 mb-2">
-                    <span className="text-cyan-400 text-sm">✨</span>
-                    <p className="text-xs font-semibold text-slate-200">
-                      Hindi / Hinglish Transliteration Intelligence: <span className="text-cyan-300">{currentResult.normalization_applied ? 'Canonical Normalization Applied' : 'Standard Linguistic Pattern'}</span>
-                    </p>
+                {/* 2. ADVANCED UPGRADE: NORMALIZATION X-RAY VIEW */}
+                <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 transition-all">
+                  <div 
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setShowXRayView(!showXRayView)}
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <span className="text-cyan-400 text-sm">✨</span>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-200 flex items-center space-x-2">
+                          <span>See how we understood this message (Normalization X-Ray)</span>
+                          <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/50">
+                            {currentResult.normalization_applied ? 'Transliteration Normalized' : 'Linguistic Analysis'}
+                          </span>
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          Inspect the 3-step transformation trail: Raw Input → Canonical Hindi/Hinglish → Plain English Gloss.
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-slate-400 hover:text-white p-1 text-xs">
+                      {showXRayView ? 'Hide ▲' : 'Inspect ▼'}
+                    </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Canonical mapping applied for Roman Hindi spelling deviations, slang, and phonetic typos before threat classification.
-                  </p>
+
+                  {showXRayView && (
+                    <div className="mt-4 pt-4 border-t border-slate-800/80 space-y-3 text-xs font-mono animate-fade-in">
+                      
+                      {/* Step 1: Raw Input */}
+                      <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                            01. Raw Input Message
+                          </span>
+                          <span className="text-[10px] text-slate-500">Unfiltered Text</span>
+                        </div>
+                        <p className="text-slate-200 text-xs leading-relaxed break-words font-sans">
+                          "{currentResult.raw_message}"
+                        </p>
+                      </div>
+
+                      {/* Arrow 1 */}
+                      <div className="flex justify-center text-cyan-400 text-xs font-bold">
+                        ↓
+                      </div>
+
+                      {/* Step 2: Canonical Normalized */}
+                      <div className="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-800/50 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">
+                            02. Normalized Representation
+                          </span>
+                          <span className="text-[10px] text-cyan-300 font-mono">Slang & Phonetic Variants Resolved</span>
+                        </div>
+                        <p className="text-cyan-200 text-xs leading-relaxed break-words font-sans">
+                          "{currentResult.normalized_text || currentResult.raw_message}"
+                        </p>
+                      </div>
+
+                      {/* Arrow 2 */}
+                      <div className="flex justify-center text-emerald-400 text-xs font-bold">
+                        ↓
+                      </div>
+
+                      {/* Step 3: English Gloss */}
+                      <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-800/50 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                            03. Literal English Gloss (Semantic Translation)
+                          </span>
+                          <span className="text-[10px] text-emerald-300 font-mono">Contextual Meaning</span>
+                        </div>
+                        <p className="text-emerald-200 text-xs leading-relaxed break-words font-sans font-medium">
+                          "{currentResult.english_gloss || 'Scam communication attempting credential harvesting under urgency.'}"
+                        </p>
+                      </div>
+
+                    </div>
+                  )}
                 </div>
 
                 {/* Signals & URL Intelligence Grid */}
@@ -969,9 +1222,16 @@ function App() {
                     <div className="space-y-3">
                       {currentResult.signals.map((sig, idx) => (
                         <div key={idx} className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                          <div className="text-xs font-bold text-slate-200 flex items-center space-x-1.5 mb-1">
-                            <span>{sig.emoji}</span>
-                            <span>{sig.label}</span>
+                          <div className="text-xs font-bold text-slate-200 flex items-center justify-between mb-1">
+                            <span className="flex items-center space-x-1.5">
+                              <span>{sig.emoji}</span>
+                              <span>{sig.label}</span>
+                            </span>
+                            {sig.points && (
+                              <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-rose-950 text-rose-300 border border-rose-800/60 font-bold">
+                                +{sig.points}%
+                              </span>
+                            )}
                           </div>
                           {sig.excerpt && (
                             <div className="text-xs">
@@ -1054,15 +1314,26 @@ function App() {
 
                 {/* CTA Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`[ScamBhasha Threat Alert] ${currentResult.scam_type} (${currentResult.risk_score}% Risk): ${currentResult.explanation}`);
-                      alert('Threat explanation copied to clipboard!');
-                    }}
-                    className="px-4 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-900 text-xs text-slate-300"
-                  >
-                    📋 Copy Threat Summary
-                  </button>
+                  <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`[ScamBhasha Threat Alert] ${currentResult.scam_type} (${currentResult.risk_score}% Risk): ${currentResult.explanation}`);
+                        alert('Threat explanation copied to clipboard!');
+                      }}
+                      className="px-4 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-900 text-xs text-slate-300"
+                    >
+                      📋 Copy Threat Summary
+                    </button>
+
+                    {currentResult.risk_level !== 'LOW' && (
+                      <button
+                        onClick={() => setShowShareModal(true)}
+                        className="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500/30 transition-all shadow"
+                      >
+                        📲 Share Warning Card
+                      </button>
+                    )}
+                  </div>
 
                   <div className="flex items-center space-x-3 w-full sm:w-auto">
                     <button
@@ -1498,48 +1769,221 @@ function App() {
 
       </main>
 
-      {/* 3. PIPELINE ANIMATION MODAL */}
+      {/* 3. ADVANCED UPGRADE: LIVE SIGNAL BUILD-UP METER */}
       {isAnalyzing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="bg-[#0b0f19] border border-cyan-500/40 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative cyber-glow-cyan text-left">
-            <h3 className="text-lg font-bold text-white mb-1">
-              ⚡ ScamBhasha Intelligence Pipeline
-            </h3>
-            <p className="text-xs text-cyan-400 font-mono mb-4">
-              Analyzing linguistic patterns & scam vectors...
-            </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className={`bg-[#0b0f19] border ${runningScore >= 70 ? 'border-rose-500/50 cyber-glow-red' : runningScore >= 40 ? 'border-amber-500/50 cyber-glow-amber' : 'border-cyan-500/40 cyber-glow-cyan'} rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative text-left transition-all duration-300`}>
+            
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-800">
+              <div className="flex items-center space-x-3">
+                <div className={`p-2.5 rounded-xl ${runningScore >= 70 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40'}`}>
+                  <span className="text-xl animate-pulse">⚡</span>
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-white">
+                    Live Signal Threat Meter
+                  </h3>
+                  <p className="text-xs text-slate-400 font-mono">
+                    Real-time Indic linguistic signal extraction & scoring
+                  </p>
+                </div>
+              </div>
 
-            <div className="space-y-3">
-              {[
-                { title: 'Message processed', desc: 'Sanitizing input & tokenizing structure' },
-                { title: 'Language detected', desc: 'Checking Devanagari, Hinglish & Roman Hindi' },
-                { title: 'Hindi/Hinglish normalized', desc: 'Mapping transliteration variants & slang' },
-                { title: 'Scam patterns analysed', desc: 'Evaluating 11 threat signal categories' },
-                { title: 'URL/signals checked', desc: 'Inspecting lookalikes, TLDs & brand mismatches' },
-                { title: 'Risk calculated', desc: 'Synthesizing explainable risk profile' }
-              ].map((step, idx) => {
-                const isFinished = pipelineStep > idx;
-                const isRunning = pipelineStep === idx;
-                return (
-                  <div
-                    key={idx}
-                    className={`flex items-start space-x-3 p-2.5 rounded-xl border transition-all ${
-                      isFinished
-                        ? 'bg-slate-900/60 border-cyan-500/30 text-slate-200'
-                        : isRunning
-                        ? 'bg-cyan-950/40 border-cyan-500/60 text-white'
-                        : 'bg-slate-950/30 border-slate-800/60 text-slate-500 opacity-60'
-                    }`}
-                  >
-                    <span className="text-xs">{isFinished ? '✓' : isRunning ? '⏳' : `${idx + 1}`}</span>
-                    <div className="text-xs">
-                      <p className="font-semibold">{step.title}</p>
-                      <p className="text-slate-400">{step.desc}</p>
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300">
+                Live Stream
+              </span>
+            </div>
+
+            {/* Live Running Meter Display */}
+            <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 mb-6 flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
+                  Cumulative Risk Score
+                </span>
+                <div className="flex items-baseline space-x-2">
+                  <span className={`text-4xl sm:text-5xl font-black font-mono tracking-tight ${runningScore >= 70 ? 'text-rose-400' : runningScore >= 40 ? 'text-amber-400' : 'text-emerald-400'} transition-all duration-300`}>
+                    {runningScore}%
+                  </span>
+                  <span className="text-xs font-bold font-mono text-slate-400 uppercase">
+                    {runningScore >= 70 ? '🔴 HIGH RISK' : runningScore >= 40 ? '🟠 MEDIUM RISK' : '🟢 LOW / SAFE'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <span className="text-xs font-mono text-cyan-400 block font-bold">
+                  {revealedSignals.length} / {(currentResult?.signals?.length) || 4}
+                </span>
+                <span className="text-[10px] text-slate-500">Signals Mapped</span>
+              </div>
+            </div>
+
+            {/* Animated Progress Bar */}
+            <div className="mb-6 space-y-1.5">
+              <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800/80">
+                <div
+                  className={`bg-gradient-to-r ${runningScore >= 70 ? 'from-amber-500 via-rose-500 to-rose-400' : runningScore >= 40 ? 'from-cyan-500 via-amber-400 to-amber-500' : 'from-cyan-500 to-emerald-400'} h-2.5 rounded-full transition-all duration-300 ease-out`}
+                  style={{ width: `${Math.min(100, runningScore)}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Sequential Signal Stream List */}
+            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+              {revealedSignals.map((sig, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3 text-xs animate-slide-in"
+                >
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <span className="text-base flex-shrink-0">{sig.emoji || '⚠️'}</span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-200 truncate">
+                        {sig.label}
+                      </p>
+                      {sig.excerpt && (
+                        <p className="text-[11px] text-slate-400 font-mono truncate">
+                          "{sig.excerpt}"
+                        </p>
+                      )}
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="flex-shrink-0">
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-rose-950/60 text-rose-300 border border-rose-500/40 shadow">
+                      +{sig.points || 18}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {revealedSignals.length === 0 && (
+                <div className="py-6 text-center text-xs text-slate-500 font-mono animate-pulse">
+                  Parsing Roman Hindi tokens & threat vectors...
+                </div>
+              )}
             </div>
+
+            {/* Footer Status */}
+            <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+              <span className="flex items-center space-x-1.5">
+                {isFinishedStreaming ? (
+                  <span className="text-emerald-400 font-bold">✓ Threat profile synthesized!</span>
+                ) : (
+                  <>
+                    <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping mr-1"></span>
+                    <span>Extracting transliterated indicators...</span>
+                  </>
+                )}
+              </span>
+              <span>ScamBhasha Engine</span>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 3. ADVANCED UPGRADE: SHAREABLE WARNING CARD MODAL */}
+      {showShareModal && currentResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in text-left">
+          <div className="bg-[#0b0f19] border border-amber-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative cyber-glow-amber">
+            
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-base"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center space-x-3 pb-3 border-b border-slate-800 mb-4">
+              <span className="text-2xl">📲</span>
+              <div>
+                <h3 className="text-base font-bold text-white">Shareable Security Warning Card</h3>
+                <p className="text-xs text-slate-400">Forward on WhatsApp to protect family & elders</p>
+              </div>
+            </div>
+
+            {/* The 1080x1080 Social Share Card Element */}
+            <div
+              ref={shareCardRef}
+              className="p-6 rounded-2xl bg-gradient-to-br from-[#0a0d14] via-[#0f1422] to-[#06080d] border-2 border-rose-500/60 shadow-2xl space-y-4 text-left my-2 relative overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center space-x-2">
+                  <span className="text-2xl">🚨</span>
+                  <div>
+                    <h4 className="text-xs font-mono font-black uppercase tracking-widest text-rose-400">
+                      CYBER THREAT ADVISORY
+                    </h4>
+                    <p className="text-[10px] text-slate-400 font-mono">
+                      ScamBhasha Indic Security Alert
+                    </p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                  {currentResult.risk_score}% {currentResult.risk_level} RISK
+                </span>
+              </div>
+
+              {/* Threat Title */}
+              <div>
+                <span className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+                  Detected Threat Pattern:
+                </span>
+                <h3 className="text-lg font-black text-white leading-tight">
+                  {currentResult.scam_type}
+                </h3>
+              </div>
+
+              {/* Explanation (Zero raw scam text to prevent spreading malicious links) */}
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 leading-relaxed font-sans">
+                <strong>Why this is dangerous:</strong> {currentResult.explanation}
+              </div>
+
+              {/* Key Protective Checklist */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-mono text-emerald-400 uppercase font-bold block">
+                  Family Protection Checklist:
+                </span>
+                {currentResult.recommended_actions.slice(0, 3).map((act, i) => (
+                  <div key={i} className="text-xs text-slate-200 flex items-start space-x-2">
+                    <span className="text-xs flex-shrink-0">•</span>
+                    <span className="font-medium text-[11px] leading-tight">{act}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer Watermark */}
+              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                <span className="text-cyan-400 font-semibold">
+                  🛡️ Scanned with ScamBhasha
+                </span>
+                <span>Cybersecurity for India</span>
+              </div>
+            </div>
+
+            {/* Share Action Buttons */}
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-3">
+              <button
+                onClick={handleDownloadCard}
+                disabled={isExporting}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-bold hover:bg-cyan-400 transition-all shadow"
+              >
+                <span>📥</span>
+                <span>{isExporting ? 'Generating...' : 'Download Image (PNG)'}</span>
+              </button>
+
+              <button
+                onClick={handleShareWhatsApp}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow"
+              >
+                <span>💬</span>
+                <span>Share on WhatsApp</span>
+              </button>
+            </div>
+
           </div>
         </div>
       )}

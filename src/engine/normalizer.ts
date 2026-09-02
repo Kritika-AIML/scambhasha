@@ -261,3 +261,69 @@ export function normalizeHindiText(text: string): NormalizationResult {
     replacements_count: replacementsCount
   };
 }
+
+const GLOSS_PHRASES: [RegExp, string][] = [
+  [/\b(aapka|apka)\s+kyc\s+expire\s+hone\s+wala\s+hai\b/gi, 'Your KYC is about to expire'],
+  [/\b(account|khata)\s+band\s+hone\s+se\s+pehle\b/gi, 'before account gets blocked'],
+  [/\b(abhi|turant)\s+update\s+karein\b/gi, 'update now'],
+  [/\bbadhai\s+ho!?\s*(aapne|apne)?\s*(₹?[\d,]+)?\s*(jeete\s+hain|jeeta\s+hai)?\b/gi, 'Congratulations! You have won prize money'],
+  [/\bprize\s+claim\s+karne\s+ke\s+liye\b/gi, 'To claim the prize'],
+  [/\bbank\s+details\s+aur\b/gi, 'bank details and'],
+  [/\b(₹\s*[\d,]+)\s*(fee|shulk)\s*(bhejein|dein)\b/gi, 'send $1 fee'],
+  [/\bwork\s+from\s+home\s+job\s+available\b/gi, 'Work from home job available'],
+  [/\bregistration\s+fee\s+only\b/gi, 'registration fee only'],
+  [/\bdaily\s+[\d\s\w]+\s+typing\s+work\b/gi, 'daily typing work'],
+  [/\baapka\s+payment\s+hold\s+par\s+hai\b/gi, 'Your payment is on hold'],
+  [/\bissue\s+resolve\s+karne\s+ke\s+liye\b/gi, 'to resolve this issue'],
+  [/\blink\s+par\s+click\s+karein\b/gi, 'click on the link'],
+  [/\baur\s+otp\s+verify\s+karein\b/gi, 'and verify the OTP'],
+  [/\baapka\s+bijli\s+connection\s+aaj\s+raat\b/gi, 'Your electricity connection tonight'],
+  [/\bdisconnect\s+ho\s+(jayega|jaayega)\b/gi, 'will be disconnected'],
+  [/\bpichhla\s+bill\s+update\s+nahi\s+hua\b/gi, 'previous bill is unpaid'],
+  [/\bsampark\s+karein\b/gi, 'contact immediately']
+];
+
+const GLOSS_WORD_MAP: Record<string, string> = {
+  'aapka': 'your', 'aapki': 'your', 'aapke': 'your',
+  'apka': 'your', 'apki': 'your', 'apke': 'your',
+  'humara': 'our', 'hamara': 'our', 'mera': 'my', 'meri': 'my',
+  'khata': 'account', 'paise': 'money', 'paisa': 'money', 'rupaye': 'rupees',
+  'band': 'closed/suspended', 'rok': 'hold', 'turant': 'immediately', 'jaldi': 'urgently',
+  'abhi': 'now', 'aaj': 'today', 'pehle': 'before', 'pahle': 'before',
+  'badhai': 'congratulations', 'naukri': 'job', 'shulk': 'fee', 'jankari': 'information',
+  'vivaran': 'details', 'suchana': 'notice', 'kripya': 'please',
+  'karein': 'do/update', 'karo': 'do', 'bhejein': 'send', 'kamayein': 'earn',
+  'hai': 'is', 'hain': 'are', 'tha': 'was', 'the': 'were', 'hoga': 'will be',
+  'milega': 'will receive', 'par': 'on', 'se': 'from', 'ko': 'to', 'ka': 'of',
+  'ki': 'of', 'ke': 'of', 'mein': 'in', 'nahi': 'not', 'aur': 'and', 'ya': 'or',
+  'tatkaal': 'immediately', 'sheeghra': 'urgently', 'jeeta': 'won', 'jeete': 'won'
+};
+
+export function generateLiteralEnglishGloss(text: string): string {
+  if (!text || typeof text !== 'string') return '';
+  
+  let gloss = text;
+  // Apply phrase-level translations first
+  for (const [regex, replacement] of GLOSS_PHRASES) {
+    gloss = gloss.replace(regex, replacement);
+  }
+
+  // Tokenize words and translate remaining Hindi tokens
+  const tokens = gloss.split(/(\s+|[.,!?;:()\[\]{}"'\/\\])/);
+  const translated = tokens.map(token => {
+    if (!token || /^\s+$/.test(token) || /^[.,!?;:()\[\]{}"'\/\\]+$/.test(token)) {
+      return token;
+    }
+    const clean = token.toLowerCase().trim();
+    if (GLOSS_WORD_MAP[clean]) {
+      const trans = GLOSS_WORD_MAP[clean];
+      if (token[0] === token[0].toUpperCase() && token.length > 1) {
+        return trans.charAt(0).toUpperCase() + trans.slice(1);
+      }
+      return trans;
+    }
+    return token;
+  });
+
+  return translated.join('').replace(/\s{2,}/g, ' ').trim();
+}

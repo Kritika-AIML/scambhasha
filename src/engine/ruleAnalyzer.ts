@@ -1,5 +1,5 @@
 import { ScamAnalysisResult, ScamSignal, SampleScam } from '../types/scam';
-import { normalizeHindiText } from './normalizer';
+import { normalizeHindiText, generateLiteralEnglishGloss } from './normalizer';
 import { analyzeUrlInMessage } from './urlAnalyzer';
 
 export const SAMPLE_SCAMS: SampleScam[] = [
@@ -166,15 +166,16 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
       script: norm.script || 'Roman Hindi',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Your KYC is about to expire. Before account gets closed, update now: bit.ly/sbi-kyc-update',
       scam_type: 'Fake KYC Scam',
       risk_score: 96,
       risk_level: 'HIGH',
       signals: [
-        { type: 'fake_banking_kyc', label: 'Fake Banking / KYC Trap', emoji: '🏦', excerpt: 'Aapka KYC expire hone wala hai' },
-        { type: 'threat', label: 'Threat / Suspension Language', emoji: '😨', excerpt: 'Account band hone se pehle' },
-        { type: 'urgency', label: 'Urgency Pressure', emoji: '⚠️', excerpt: 'abhi update karein' },
-        { type: 'suspicious_url', label: 'Suspicious / Shortened URL', emoji: '🔗', excerpt: 'bit.ly/sbi-kyc-update' },
-        { type: 'impersonation', label: 'Brand Impersonation', emoji: '👮', excerpt: 'sbi-kyc-update' }
+        { type: 'fake_banking_kyc', label: 'Fake Banking / KYC Trap', emoji: '🏦', excerpt: 'Aapka KYC expire hone wala hai', points: 22 },
+        { type: 'threat', label: 'Threat / Suspension Language', emoji: '😨', excerpt: 'Account band hone se pehle', points: 24 },
+        { type: 'urgency', label: 'Urgency Pressure', emoji: '⚠️', excerpt: 'abhi update karein', points: 18 },
+        { type: 'suspicious_url', label: 'Suspicious / Shortened URL', emoji: '🔗', excerpt: 'bit.ly/sbi-kyc-update', points: 18 },
+        { type: 'impersonation', label: 'Brand Impersonation (SBI)', emoji: '👮', excerpt: 'sbi-kyc-update', points: 14 }
       ],
       explanation: 'This message uses an urgent account-suspension threat combined with a deceptive shortened link mimicking SBI to harvest netbanking credentials under the guise of mandatory KYC renewal.',
       recommended_actions: [
@@ -205,14 +206,15 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
       script: norm.script || 'Latin (English)',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Work from home job available. ₹30,000 monthly. Registration fee only ₹499. Daily 2 hours typing work. WhatsApp: 9876543210',
       scam_type: 'Fake Work From Home Scam',
       risk_score: 92,
       risk_level: 'HIGH',
       signals: [
-        { type: 'fake_job', label: 'Fake Job / WFH Offer', emoji: '💼', excerpt: 'Work from home job available. ₹30,000 monthly' },
-        { type: 'payment', label: 'Upfront Registration Fee Demand', emoji: '💰', excerpt: 'Registration fee only ₹499' },
-        { type: 'reward_bait', label: 'Unrealistic Pay for Minimal Effort', emoji: '🎁', excerpt: 'Daily 2 hours typing work' },
-        { type: 'suspicious_cta', label: 'Off-Platform WhatsApp Redirection', emoji: '🚨', excerpt: 'WhatsApp: 9876543210' }
+        { type: 'fake_job', label: 'Fake Job / WFH Offer', emoji: '💼', excerpt: 'Work from home job available. ₹30,000 monthly', points: 28 },
+        { type: 'payment', label: 'Upfront Registration Fee Demand', emoji: '💰', excerpt: 'Registration fee only ₹499', points: 26 },
+        { type: 'reward_bait', label: 'Unrealistic Pay for Minimal Effort', emoji: '🎁', excerpt: 'Daily 2 hours typing work', points: 20 },
+        { type: 'suspicious_cta', label: 'Off-Platform WhatsApp Redirection', emoji: '🚨', excerpt: 'WhatsApp: 9876543210', points: 18 }
       ],
       explanation: 'Classic advance-fee employment fraud: lures victims with an unrealistic ₹30,000/month salary for minimal effort while demanding an upfront non-refundable ₹499 registration fee via WhatsApp.',
       recommended_actions: [
@@ -235,15 +237,16 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
       script: norm.script || 'Roman Hindi',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Congratulations! You have won ₹5,00,000 in KBC lucky draw. To claim prize send bank details and ₹1,500 fee: bit.ly/kbc-claim',
       scam_type: 'Lottery/Reward Scam',
       risk_score: 98,
       risk_level: 'HIGH',
       signals: [
-        { type: 'reward_bait', label: 'Fake Reward / Lottery Bait', emoji: '🎁', excerpt: 'Badhai ho! Aapne ₹5,00,000 jeete hain' },
-        { type: 'impersonation', label: 'Brand Impersonation (KBC)', emoji: '👮', excerpt: 'KBC lucky draw mein' },
-        { type: 'personal_info', label: 'Bank Details Harvesting', emoji: '📱', excerpt: 'bank details' },
-        { type: 'payment', label: 'Advance Processing Fee Demand', emoji: '💰', excerpt: '₹1,500 fee bhejein' },
-        { type: 'suspicious_url', label: 'Phishing Claim Link', emoji: '🔗', excerpt: 'bit.ly/kbc-claim' }
+        { type: 'reward_bait', label: 'Fake Reward / Lottery Bait', emoji: '🎁', excerpt: 'Badhai ho! Aapne ₹5,00,000 jeete hain', points: 26 },
+        { type: 'impersonation', label: 'Brand Impersonation (KBC)', emoji: '👮', excerpt: 'KBC lucky draw mein', points: 20 },
+        { type: 'personal_info', label: 'Bank Details Harvesting', emoji: '📱', excerpt: 'bank details', points: 18 },
+        { type: 'payment', label: 'Advance Processing Fee Demand', emoji: '💰', excerpt: '₹1,500 fee bhejein', points: 20 },
+        { type: 'suspicious_url', label: 'Phishing Claim Link', emoji: '🔗', excerpt: 'bit.ly/kbc-claim', points: 14 }
       ],
       explanation: 'Fabricated lottery scam impersonating Kaun Banega Crorepati (KBC) asking for a ₹1,500 advance processing fee and sensitive bank details to unlock a fictitious ₹5,00,000 prize.',
       recommended_actions: [
@@ -274,15 +277,16 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
       script: norm.script || 'Roman Hindi',
       normalization_applied: norm.normalization_applied,
       normalized_text: normalized,
+      english_gloss: 'Your payment is on hold. To resolve issue click on the link and verify OTP: http://paytm-support-fix.xyz/verify',
       scam_type: 'Payment/Phishing Scam',
       risk_score: 95,
       risk_level: 'HIGH',
       signals: [
-        { type: 'threat', label: 'Transaction Hold / False Alarm', emoji: '😨', excerpt: 'Aapka payment hold par hai' },
-        { type: 'suspicious_cta', label: 'Deceptive Resolution Link', emoji: '🚨', excerpt: 'Issue resolve karne ke liye link par click karein' },
-        { type: 'credential_request', label: 'OTP Harvesting Trap', emoji: '🔐', excerpt: 'OTP verify karein' },
-        { type: 'suspicious_url', label: 'Deceptive Lookalike Domain', emoji: '🔗', excerpt: 'paytm-support-fix.xyz/verify' },
-        { type: 'impersonation', label: 'Payment App Impersonation (Paytm)', emoji: '👮', excerpt: 'paytm-support-fix' }
+        { type: 'threat', label: 'Transaction Hold / False Alarm', emoji: '😨', excerpt: 'Aapka payment hold par hai', points: 22 },
+        { type: 'suspicious_cta', label: 'Deceptive Resolution Link', emoji: '🚨', excerpt: 'Issue resolve karne ke liye link par click karein', points: 18 },
+        { type: 'credential_request', label: 'OTP Harvesting Trap', emoji: '🔐', excerpt: 'OTP verify karein', points: 24 },
+        { type: 'suspicious_url', label: 'Deceptive Lookalike Domain', emoji: '🔗', excerpt: 'paytm-support-fix.xyz/verify', points: 18 },
+        { type: 'impersonation', label: 'Payment App Impersonation (Paytm)', emoji: '👮', excerpt: 'paytm-support-fix', points: 13 }
       ],
       explanation: 'Phishing attack mimicking a payment gateway (Paytm) claiming a blocked transaction to induce panic and steal OTPs on an unverified .xyz spoofing domain.',
       recommended_actions: [
@@ -326,7 +330,8 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
         type: rule.type,
         label: rule.label,
         emoji: rule.emoji,
-        excerpt: matchedExcerpt
+        excerpt: matchedExcerpt,
+        points: rule.weight
       });
       baseScore += rule.weight;
     }
@@ -334,13 +339,15 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
 
   // Add URL signal if suspicious
   if (urlIntel.url_present) {
+    const urlPts = Math.round(urlIntel.url_risk_score * 0.35);
     detectedSignals.push({
       type: 'suspicious_url',
       label: urlIntel.domain_suspicious || urlIntel.is_shortened ? 'Suspicious / Obfuscated URL' : 'Embedded Web Link',
       emoji: '🔗',
-      excerpt: urlIntel.url || 'URL link'
+      excerpt: urlIntel.url || 'URL link',
+      points: urlPts
     });
-    baseScore += Math.round(urlIntel.url_risk_score * 0.35);
+    baseScore += urlPts;
   }
 
   // Determine scam type & risk level
@@ -355,6 +362,20 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
 
   let finalRiskScore = Math.min(99, Math.max(5, baseScore));
   if (detectedSignals.length === 0) finalRiskScore = 12;
+
+  // Normalize per-signal points so sum matches finalRiskScore
+  if (detectedSignals.length > 0 && baseScore > 0) {
+    let allocated = 0;
+    detectedSignals.forEach((s, idx) => {
+      if (idx === detectedSignals.length - 1) {
+        s.points = Math.max(5, finalRiskScore - allocated);
+      } else {
+        const p = Math.max(5, Math.round(((s.points || 20) / baseScore) * finalRiskScore));
+        s.points = p;
+        allocated += p;
+      }
+    });
+  }
 
   let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
   if (finalRiskScore >= 70) riskLevel = 'HIGH';
@@ -376,11 +397,14 @@ export function analyzeScamDeterministic(rawText: string): ScamAnalysisResult {
     ? `Flagged due to ${detectedSignals.length} high-risk indicators including ${detectedSignals.map(s => s.label).slice(0, 3).join(', ')}.`
     : 'No overt scam patterns, urgency pressure, or credential harvesting techniques detected.';
 
+  const englishGloss = generateLiteralEnglishGloss(normalized);
+
   return {
     language: norm.language,
     script: norm.script,
     normalization_applied: norm.normalization_applied,
     normalized_text: normalized,
+    english_gloss: englishGloss || normalized,
     scam_type: scamType,
     risk_score: finalRiskScore,
     risk_level: riskLevel,

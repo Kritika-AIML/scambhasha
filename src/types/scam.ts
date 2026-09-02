@@ -18,6 +18,7 @@ export interface ScamSignal {
   label: string;
   emoji: string;
   excerpt: string;
+  points?: number; // Per-signal risk contribution for Live Build-up Meter (e.g., +18%)
   explanation?: string;
 }
 
@@ -37,6 +38,7 @@ export interface ScamAnalysisResult {
   script: string; // e.g. "Roman Hindi", "Devanagari", "Mixed (Latin + Devanagari)", "Latin"
   normalization_applied: boolean;
   normalized_text?: string;
+  english_gloss?: string; // 3-step Normalization X-Ray literal English translation
   scam_type: string; // e.g. "Fake KYC Scam", "Fake Work From Home Scam", "Lottery/Reward Scam", "Payment/Phishing Scam", "Not a Scam"
   risk_score: number; // 0-100
   risk_level: RiskLevel;

@@ -1,5 +1,5 @@
 import { ScamAnalysisResult } from '../types/scam';
-import { normalizeHindiText } from './normalizer';
+import { normalizeHindiText, generateLiteralEnglishGloss } from './normalizer';
 import { analyzeUrlInMessage } from './urlAnalyzer';
 import { analyzeScamDeterministic } from './ruleAnalyzer';
 
@@ -13,13 +13,15 @@ RULES:
 1. Explain the threat clearly. Do NOT return a simple "spam" verdict.
 2. Identify specific scam signals with EXACT excerpts from the text.
 3. Classify the scam type (e.g., "Fake KYC Scam", "Fake Work From Home Scam", "Lottery/Reward Scam", "Payment/Phishing Scam", "Electricity Bill Scam", "Customs/Courier Scam", "Not a Scam").
-4. Provide structured risk metrics and actionable guidance.
+4. Provide a literal plain-English translation ("english_gloss") of the message for the 3-step Normalization X-Ray view.
+5. Provide structured risk metrics and actionable guidance.
 
 RETURN ONLY VALID JSON conforming precisely to this schema (no markdown, no backticks, just raw JSON):
 {
   "language": "Hindi + Hinglish | Roman Hindi | Devanagari Hindi | English",
   "script": "Roman Hindi | Devanagari | Mixed | Latin",
   "normalization_applied": true | false,
+  "english_gloss": "Short literal English translation of the normalized message",
   "scam_type": "string",
   "risk_score": 0-100,
   "risk_level": "LOW" | "MEDIUM" | "HIGH",
@@ -28,7 +30,8 @@ RETURN ONLY VALID JSON conforming precisely to this schema (no markdown, no back
       "type": "urgency | payment | suspicious_url | reward_bait | impersonation | credential_request | personal_info | threat | fake_job | fake_banking_kyc | suspicious_cta",
       "label": "string",
       "emoji": "emoji icon",
-      "excerpt": "exact substring from message"
+      "excerpt": "exact substring from message",
+      "points": 20
     }
   ],
   "explanation": "1-2 sentence plain-language summary of why this verdict was reached",
@@ -117,6 +120,7 @@ Perform contextual classification, signal extraction with exact excerpts, and pr
       script: parsed.script || norm.script,
       normalization_applied: parsed.normalization_applied ?? norm.normalization_applied,
       normalized_text: norm.normalized_text,
+      english_gloss: parsed.english_gloss || generateLiteralEnglishGloss(norm.normalized_text),
       scam_type: parsed.scam_type,
       risk_score: score,
       risk_level: riskLevel,
@@ -124,7 +128,8 @@ Perform contextual classification, signal extraction with exact excerpts, and pr
         type: s.type || 'suspicious_cta',
         label: s.label || 'Detected Threat Signal',
         emoji: s.emoji || '⚠️',
-        excerpt: s.excerpt || ''
+        excerpt: s.excerpt || '',
+        points: s.points || Math.max(5, Math.round(score / Math.max(1, parsed.signals.length)))
       })),
       explanation: parsed.explanation || 'Contextual pattern analysis completed.',
       recommended_actions: Array.isArray(parsed.recommended_actions) && parsed.recommended_actions.length > 0
