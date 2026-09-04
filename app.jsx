@@ -1296,7 +1296,43 @@ function App() {
                   </div>
 
                 </div>
+                {currentResult.risk_level === 'HIGH' && (
+  <div className="rounded-2xl border border-rose-500/40 bg-gradient-to-r from-rose-950/40 to-amber-950/20 p-5 shadow-lg shadow-rose-950/20">
+    <div className="flex items-start gap-3">
+      <span className="text-2xl">🚨</span>
 
+      <div className="flex-1">
+        <h2 className="text-base font-bold text-white">
+          Take Action Now
+        </h2>
+
+        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+          This message is classified as high-risk. Do not click links,
+          share OTPs or send money. If you believe you have been targeted,
+          report the incident through the official cybercrime portal.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <a
+            href="https://www.cybercrime.gov.in/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold text-center transition-all"
+          >
+            🚨 Report Fraud Now
+          </a>
+
+          <a
+            href="tel:1930"
+            className="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold text-center transition-all"
+          >
+            📞 Call 1930
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
                 {/* Recommended Safety Actions */}
                 <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-slate-900/90 to-[#0b0f19] p-6 space-y-4 cyber-card">
                   <div className="flex items-center space-x-2 pb-2 border-b border-slate-800">
@@ -1335,20 +1371,43 @@ function App() {
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-3 w-full sm:w-auto">
-                    <button
-                      onClick={() => setIsReportModalOpen(true)}
-                      className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/40 text-xs font-bold shadow-lg"
-                    >
-                      🚩 Report Scam (Help Community)
-                    </button>
-                    <button
-                      onClick={() => setViewingResult(false)}
-                      className="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 text-xs font-bold shadow-lg shadow-cyan-500/20"
-                    >
-                      ← Scan Another
-                    </button>
-                  </div>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+
+  {currentResult.risk_level === 'HIGH' && (
+    <>
+      <a
+        href="https://www.cybercrime.gov.in/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold text-center shadow-lg shadow-rose-500/20 transition-all"
+      >
+        🚨 Report Fraud Now
+      </a>
+
+      <a
+        href="tel:1930"
+        className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold text-center transition-all"
+      >
+        📞 Call 1930
+      </a>
+    </>
+  )}
+
+  <button
+    onClick={() => setIsReportModalOpen(true)}
+    className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold transition-all"
+  >
+    🚩 Report to Community
+  </button>
+
+  <button
+    onClick={() => setViewingResult(false)}
+    className="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 text-xs font-bold shadow-lg shadow-cyan-500/20"
+  >
+    ← Scan Another
+  </button>
+
+</div>
                 </div>
 
               </div>
