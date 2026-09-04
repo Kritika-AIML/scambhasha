@@ -2184,7 +2184,9 @@ function App() {
 
 // Mount React Root
 const rootElement = document.getElementById('root');
-if (rootElement) {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(<App />);
+
+if (!rootElement) {
+  throw new Error('Root element not found');
 }
+
+ReactDOM.createRoot(rootElement).render(<App />);
