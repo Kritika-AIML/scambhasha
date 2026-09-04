@@ -1056,16 +1056,7 @@ function App() {
               </button>
             </nav>
 
-            {/* API Key Modal Trigger */}
-            <button
-              onClick={() => setIsApiKeyModalOpen(true)}
-              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono border bg-slate-900/80 border-slate-700 text-slate-300 hover:border-cyan-500/40"
-            >
-              <span>🔑 API Key</span>
-            </button>
-          </div>
-        </div>
-      </header>
+           
 
       {/* 2. MAIN BODY */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8">
