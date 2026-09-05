@@ -1082,40 +1082,117 @@ function App() {
                 </div>
 
                 {/* Threat Banner Card */}
-                <div className={`rounded-2xl p-6 sm:p-8 border ${currentResult.risk_level === 'HIGH' ? 'border-rose-500/40 bg-rose-950/20 cyber-glow-red' : 'border-amber-500/40 bg-amber-950/20 cyber-glow-amber'} relative overflow-hidden backdrop-blur-xl`}>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${currentResult.risk_level === 'HIGH' ? 'bg-rose-500/20 text-rose-400 border-rose-500/40' : 'bg-amber-500/20 text-amber-400 border-amber-500/40'}`}>
-                          🔴 {currentResult.risk_level} RISK VERDICT
-                        </span>
-                        <span className="px-3 py-1 rounded-full text-xs font-mono bg-slate-900/80 border border-slate-700 text-slate-300">
-                          🌐 Lang: <strong className="text-white">{currentResult.language}</strong> | Script: <strong className="text-white">{currentResult.script}</strong>
-                        </span>
-                      </div>
+               {/* Threat Banner Card - Refined UI */}
+<div className={`rounded-3xl p-6 sm:p-8 border ${
+  currentResult.risk_level === 'HIGH'
+    ? 'border-rose-500/30 bg-gradient-to-br from-rose-950/30 via-slate-950/80 to-slate-950/90'
+    : 'border-amber-500/30 bg-gradient-to-br from-amber-950/25 via-slate-950/80 to-slate-950/90'
+} relative overflow-hidden backdrop-blur-xl shadow-2xl`}>
 
-                      <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                        {currentResult.scam_type}
-                      </h1>
-                      <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
-                        {currentResult.explanation}
-                      </p>
-                    </div>
+  {/* Subtle status glow */}
+  <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 ${
+    currentResult.risk_level === 'HIGH' ? 'bg-rose-500' : 'bg-amber-500'
+  }`} />
 
-                    <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-950/80 border border-slate-800 min-w-[170px] text-center">
-                      <span className="text-xs font-mono text-slate-400 uppercase">Scam Probability</span>
-                      <div className={`text-4xl sm:text-5xl font-black font-mono ${currentResult.risk_level === 'HIGH' ? 'text-rose-400' : 'text-amber-400'}`}>
-                        {currentResult.risk_score}%
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
-                        <div
-                          className={`h-2 rounded-full ${currentResult.risk_level === 'HIGH' ? 'bg-rose-500' : 'bg-amber-500'}`}
-                          style={{ width: `${currentResult.risk_score}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  <div className="relative z-10">
+
+    {/* Top status row */}
+    <div className="flex flex-wrap items-center gap-2 mb-5">
+
+      <span className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+        currentResult.risk_level === 'HIGH'
+          ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+          : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      }`}>
+        {currentResult.risk_level === 'HIGH' ? '🚨' : '⚠️'} {currentResult.risk_level} RISK
+      </span>
+
+      <span className="px-3 py-1.5 rounded-full text-[11px] bg-slate-900/70 border border-slate-700 text-slate-400">
+        {currentResult.language} · {currentResult.script}
+      </span>
+
+    </div>
+
+    {/* Main result */}
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-7 items-center">
+
+      <div className="space-y-4">
+
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 mb-2">
+            Scam detected
+          </p>
+
+          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+            {currentResult.scam_type}
+          </h1>
+        </div>
+
+        {/* Simple explanation */}
+        <div className="rounded-2xl bg-slate-950/60 border border-slate-800/80 p-4 sm:p-5">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 mb-2">
+            In simple words
+          </p>
+
+          <p className="text-sm sm:text-base text-slate-300 leading-7">
+            {currentResult.explanation}
+          </p>
+        </div>
+
+        {/* Clear warning */}
+        <p className={`text-sm font-semibold ${
+          currentResult.risk_level === 'HIGH'
+            ? 'text-rose-300'
+            : 'text-amber-300'
+        }`}>
+          {currentResult.risk_level === 'HIGH'
+            ? "Do not click, reply, pay, or share sensitive information."
+            : "Be careful before clicking links or sharing personal information."
+          }
+        </p>
+
+      </div>
+
+      {/* Risk score */}
+      <div className="flex flex-col items-center justify-center p-5 sm:p-6 rounded-3xl bg-slate-950/80 border border-slate-800 min-w-[190px] text-center">
+
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+          Scam likelihood
+        </span>
+
+        <div className={`text-5xl sm:text-6xl font-black font-mono mt-1 ${
+          currentResult.risk_level === 'HIGH'
+            ? 'text-rose-400'
+            : 'text-amber-400'
+        }`}>
+          {currentResult.risk_score}%
+        </div>
+
+        <p className="text-xs text-slate-400 mt-1">
+          likely to be a scam
+        </p>
+
+        <div className="w-full bg-slate-800/80 rounded-full h-2 mt-5 overflow-hidden">
+          <div
+            className={`h-2 rounded-full transition-all duration-700 ${
+              currentResult.risk_level === 'HIGH'
+                ? 'bg-rose-500'
+                : 'bg-amber-500'
+            }`}
+            style={{ width: `${currentResult.risk_score}%` }}
+          />
+        </div>
+
+        <div className="flex justify-between w-full mt-2 text-[9px] text-slate-600 font-mono">
+          <span>0</span>
+          <span>100</span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
 
                 {/* 2. ADVANCED UPGRADE: NORMALIZATION X-RAY VIEW */}
                 <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 transition-all">
